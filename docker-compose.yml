@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+
+  ##Eureka Server
+  discovery-server:
+    image: wasim02/discovery-server:latest
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    depends_on:
+      - zipkin
+
+  api-gateway:
+    image: wasim02/api-getway:latest
+    container_name: api-gateway
+    network_mode: host
+    depends_on:
+      - zipkin
+      - discovery-server
+      - auth-server
+
+
+  ## Zipkin
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+
+  auth-server:
+    container_name: auth-server
+    image: wasim02/auth-server:latest
+    network_mode: host
+    depends_on:
+      - discovery-server
+
+  #product-service
+  product-service:
+    container_name: product-service
+    image: wasim02/product-service:latest
+    network_mode: host
+    depends_on:
+      - discovery-server
+      - api-gateway
+
