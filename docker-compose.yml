@@ -38,9 +38,37 @@ services:
   #product-service
   product-service:
     container_name: product-service
-    image: wasim02/product-service:latest
+    image: product-service:latest
     network_mode: host
     depends_on:
       - discovery-server
       - api-gateway
 
+  ## Prometheus
+  prometheus:
+    image: prom/prometheus:v2.37.1
+    container_name: prometheus
+    restart: always
+    network_mode: host
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - product-service
+
+  grafana:
+    image: grafana/grafana-oss:8.5.2
+    container_name: grafana
+    restart: always
+    network_mode: host
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - ./grafana:/var/lib/grafana
+    user: root:root
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
